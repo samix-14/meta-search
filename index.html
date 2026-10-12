@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b0e14">
+<title>Meta Search · Analizzatore locale</title><link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="app-shell">
+<aside class="sidebar">
+<a class="brand" href="/"><span class="brand-mark">M<span>·</span></span><span><strong>META SEARCH</strong><small>LOCAL FILE INTELLIGENCE</small></span></a>
+<div class="nav-label">WORKSPACE</div>
+<button class="nav-item active" data-view="analyzer"><span>◈</span> Analizzatore <kbd>01</kbd></button>
+<button class="nav-item" data-view="results"><span>▤</span> Risultati <kbd>02</kbd></button>
+<button class="nav-item" data-view="lab"><span>⌘</span> Laboratorio tecnico <kbd>03</kbd></button>
+<div class="sidebar-bottom"><div class="privacy-card"><span class="privacy-dot"></span><div><strong>Modalità locale</strong><small>I file restano sul PC</small></div></div><div class="version">META SEARCH <span>v0.1</span></div></div>
+</aside>
+<main class="main">
+<header class="topbar"><div class="breadcrumb">WORKSPACE <span>/</span> <strong id="crumb">ANALIZZATORE</strong></div><div class="status"><span class="status-dot"></span> MOTORE LOCALE <span class="status-divider"></span><span id="api-status">Connessione...</span></div></header>
+<section class="view active" id="view-analyzer">
+<div class="page-heading"><div><div class="eyebrow">FILE INTELLIGENCE / 01</div><h1>Analizzatore <span>di metadati.</span></h1><p>Scopri cosa contiene davvero un file, oltre al nome e all'estensione.</p></div><div class="heading-icon">⌁</div></div>
+<div class="upload-panel" id="drop-zone"><input type="file" id="file-input" hidden><div class="upload-icon">↥</div><h2>Trascina qui il tuo file</h2><p>Oppure selezionalo dal computer. L'analisi avviene localmente.</p><button class="primary-btn" id="choose-file">Seleziona file <span>↗</span></button><div class="upload-foot"><span>◇ Qualsiasi formato</span><span>◇ Massimo 100 MB</span><span>◇ Nessun upload esterno</span></div><div id="selected-file" class="selected-file hidden"></div></div>
+<div class="section-title"><div><span class="section-index">A</span><h2>Motori di analisi</h2></div><span class="muted">VERSIONE 0.1</span></div>
+<div class="feature-grid">
+<article class="feature-card"><div class="feature-symbol purple">⌗</div><div><h3>Identità del file</h3><p>Firma binaria, MIME, estensione e dimensioni reali.</p></div><span class="feature-state">ATTIVO</span></article>
+<article class="feature-card"><div class="feature-symbol blue">#</div><div><h3>Impronte crittografiche</h3><p>SHA-256, SHA-1 e MD5 per confrontare i file.</p></div><span class="feature-state">ATTIVO</span></article>
+<article class="feature-card"><div class="feature-symbol orange">⌁</div><div><h3>Ispezione binaria</h3><p>Entropia, byte nulli, stringhe leggibili e anteprima esadecimale.</p></div><span class="feature-state">ATTIVO</span></article>
+<article class="feature-card"><div class="feature-symbol green">▧</div><div><h3>Metadati incorporati</h3><p>EXIF per immagini e proprietà PDF quando disponibili.</p></div><span class="feature-state">ATTIVO</span></article>
+</div>
+<div class="notice"><span>ⓘ</span><p><strong>Nota forense:</strong> i metadati sono indizi, non verità assolute. Possono essere incompleti, rimossi o falsificati. Meta Search non certifica l'autenticità dei file.</p></div>
+</section>
+<section class="view hidden" id="view-results">
+<div class="page-heading compact"><div><div class="eyebrow">FILE INTELLIGENCE / 02</div><h1>Risultati <span>dell'analisi.</span></h1><p id="result-subtitle">Seleziona un file nella pagina Analizzatore per iniziare.</p></div><button id="export-json" class="secondary-btn" disabled>Esporta JSON ↗</button></div>
+<div id="empty-results" class="empty-state"><div>⌕</div><h2>Nessun file analizzato</h2><p>I risultati appariranno qui dopo la prima analisi.</p><button class="primary-btn" data-goto="analyzer">Analizza un file</button></div>
+<div id="results-content" class="hidden"><div class="summary-grid" id="summary-grid"></div><div class="results-toolbar"><div class="section-title"><div><span class="section-index">B</span><h2>Metadati rilevati</h2></div><span id="metadata-count" class="muted"></span></div><input id="metadata-search" class="search-input" type="search" placeholder="⌕  Cerca per nome, valore o spiegazione..."></div><div id="metadata-list" class="metadata-list"></div></div>
+</section>
+<section class="view hidden" id="view-lab">
+<div class="page-heading compact"><div><div class="eyebrow">FILE INTELLIGENCE / 03</div><h1>Laboratorio <span>tecnico.</span></h1><p>Ispezione grezza del contenuto del file analizzato.</p></div></div>
+<div id="lab-empty" class="empty-state"><div>⌘</div><h2>Laboratorio in attesa</h2><p>Prima analizza un file: qui troverai stringhe e byte grezzi.</p></div>
+<div id="lab-content" class="hidden"><div class="lab-tabs"><button class="lab-tab active" data-tab="strings">Stringhe leggibili</button><button class="lab-tab" data-tab="hex">Anteprima HEX</button></div><div class="lab-toolbar"><span id="lab-caption">ANTEPRIMA DEL FILE</span><button id="copy-lab" class="secondary-btn small">Copia contenuto</button></div><pre id="lab-output" class="code-panel"></pre><p class="lab-footnote">Le stringhe vengono estratte dai byte ASCII stampabili (minimo 5 caratteri). La versione 0.1 mostra al massimo 500 stringhe e i primi 512 byte in HEX.</p></div>
+</section>
+<footer class="footer"><span>© META SEARCH / LOCAL-FIRST FILE ANALYSIS</span><span>BUILT FOR CURIOSITY <span class="footer-dot">●</span></span></footer>
+</main></div><div id="toast" class="toast" role="status" aria-live="polite"></div><script src="/script.js"></script>
+</body></html>
