@@ -73,7 +73,7 @@ $$(".lab-tab").forEach((button) => button.addEventListener("click", () => {
 function renderLab() {
   if (!analysis) return;
   $("#lab-empty").classList.add("hidden"); $("#lab-content").classList.remove("hidden");
-  const output = labTab === "strings" ? (analysis.strings.length ? analysis.strings.map((v,i) => String(i+1).padStart(3,"0") + "  " + v).join("\n") : "Nessuna stringa ASCII leggibile trovata.") : (analysis.hex_preview.match(/.{1,2}/g) || []).join(" ") || "(file vuoto)";
+  const output = labTab === "strings" ? (analysis.strings.length ? analysis.strings.map((v,i) => String(i+1).padStart(3,"0") + "  " + v).join("\n") : "Nessuna stringa ASCII leggibile trovata.") : analysis.hex_preview || "(file vuoto)";
   $("#lab-output").textContent = output; $("#lab-caption").textContent = labTab === "strings" ? "STRINGHE LEGGIBILI · " + analysis.strings.length : "HEX · PRIMI 512 BYTE";
 }
 $("#copy-lab").addEventListener("click", async () => {
