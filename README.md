@@ -1,13 +1,15 @@
 # Meta Search
 
-Analizzatore locale di metadati per Windows. Versione iniziale: **0.1**.
+Analizzatore locale di metadati per Windows. Versione corrente: **0.2**.
 
 ## Funzioni incluse
 - Rilevamento euristico di firme binarie, MIME, estensione e dimensione.
 - Hash SHA-256, SHA-1 e MD5.
 - Entropia, byte nulli e valori di byte distinti.
 - Estrazione di stringhe ASCII e anteprima HEX.
-- Dimensioni e metadati EXIF delle immagini supportate.
+- Dimensioni e metadati EXIF delle immagini supportate, con riepilogo leggibile.
+- Estrazione delle coordinate GPS EXIF e collegamento a Google Maps, quando la foto le contiene.
+- Riepilogo rapido di posizione, data dello scatto e fotocamera, quando disponibili.
 - Numero pagine, cifratura e metadati standard PDF.
 - Ricerca nei metadati ed esportazione JSON.
 
@@ -42,4 +44,4 @@ Le firme sono euristiche e i metadati possono essere falsificati o incompleti. S
 - requirements.txt — dipendenze Python.
 
 ## Roadmap
-La 0.1 analizza singoli file. Versioni future potranno aggiungere analisi più profonde per formati specifici, esportazione CSV/HTML, confronto file e scansione cartelle.
+La 0.2 analizza singoli file e rende più leggibili i dati principali. Versioni future potranno aggiungere analisi più profonde per formati specifici, esportazione CSV/HTML, confronto file e scansione cartelle.
