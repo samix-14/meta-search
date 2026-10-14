@@ -47,7 +47,19 @@ function renderResults() {
   $("#result-subtitle").textContent = analysis.name + " · " + analysis.size_human + " · analizzato " + new Date(analysis.analyzed_at).toLocaleString();
   const cards = [["FILE",analysis.name],["DIMENSIONE",analysis.size_human],["FORMATO RILEVATO",analysis.detected_type],["SHA-256",analysis.sha256,true]];
   $("#summary-grid").innerHTML = cards.map((item) => '<div class="summary-card"><small>' + escapeHTML(item[0]) + '</small><strong class="' + (item[2] ? "hash" : "") + '" title="' + escapeHTML(item[1]) + '">' + escapeHTML(item[1]) + '</strong></div>').join("");
-  $("#metadata-count").textContent = analysis.metadata.length + " CAMPI"; $("#export-json").disabled = false; renderMetadata();
+  $("#metadata-count").textContent = analysis.metadata.length + " CAMPI"; $("#export-json").disabled = false; renderHighlights(); renderMetadata();
+}
+function renderHighlights() {
+  const h = analysis?.highlights || {};
+  const cards = [
+    {title:"DOVE È STATA SCATTATA", value:h.location, detail:"Coordinate GPS incorporate nella foto.", map:h.map_url},
+    {title:"DATA DELLO SCATTO", value:h.photo_date, detail:"Data dichiarata nei metadati della fotocamera."},
+    {title:"FOTOCAMERA", value:h.camera, detail:"Marca e modello dichiarati dalla fotocamera."}
+  ];
+  $("#quick-insights").innerHTML = '<div class="insights-heading"><strong>IN PAROLE SEMPLICI</strong><span>Informazioni principali, se presenti</span></div><div class="insights-grid">' +
+    cards.map(card => '<article class="insight-card"><small>' + escapeHTML(card.title) + '</small><strong>' + escapeHTML(card.value || "Non disponibile") + '</strong><p>' + escapeHTML(card.value ? card.detail : (card.title === "DOVE È STATA SCATTATA" ? "Questa foto non contiene coordinate GPS leggibili." : "Il file non contiene questo dato, oppure non è stato riconosciuto.")) + '</p>' +
+    (card.map && card.value ? '<a href="' + escapeHTML(card.map) + '" target="_blank" rel="noopener noreferrer">Apri posizione su Google Maps ↗</a>' : '') + '</article>').join("") +
+    '</div>';
 }
 function renderMetadata() {
   if (!analysis) return;
