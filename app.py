@@ -72,7 +72,7 @@ def analyze_file(path, original_name):
     ]
     try:
         from PIL import Image
-        from PIL.ExifTags import TAGS
+        from PIL.ExifTags import TAGS, GPSTAGS
         import io
         with Image.open(io.BytesIO(data)) as im:
             metadata += [
@@ -80,8 +80,29 @@ def analyze_file(path, original_name):
                 {"group":"Immagine","key":"Dimensioni","value":f"{im.width} × {im.height}","explanation":"Larghezza e altezza in pixel."},
                 {"group":"Immagine","key":"Modalità colore","value":str(im.mode),"explanation":"Rappresentazione del colore, ad esempio RGB o RGBA."},
             ]
-            for tag_id, value in im.getexif().items():
+            exif = im.getexif()
+            for tag_id, value in exif.items():
                 metadata.append({"group":"EXIF","key":TAGS.get(tag_id,str(tag_id)),"value":str(value)[:300],"explanation":"Dato incorporato nell'immagine, potenzialmente assente o modificabile."})
+            try:
+                gps_raw = exif.get_ifd(34853) if 34853 in exif else {}
+                gps = {GPSTAGS.get(tag_id, str(tag_id)): value for tag_id, value in gps_raw.items()}
+                def as_float(number):
+                    if hasattr(number, "numerator") and hasattr(number, "denominator"):
+                        return float(number.numerator) / float(number.denominator) if number.denominator else 0.0
+                    return float(number)
+                def gps_decimal(parts, reference):
+                    degrees, minutes, seconds = [as_float(part) for part in parts]
+                    result = degrees + minutes / 60.0 + seconds / 3600.0
+                    return -result if str(reference).upper() in ("S", "W") else result
+                if gps.get("GPSLatitude") and gps.get("GPSLongitude"):
+                    latitude = gps_decimal(gps["GPSLatitude"], gps.get("GPSLatitudeRef", "N"))
+                    longitude = gps_decimal(gps["GPSLongitude"], gps.get("GPSLongitudeRef", "E"))
+                    coordinates = f"{latitude:.6f}, {longitude:.6f}"
+                    map_url = f"https://www.google.com/maps?q={latitude:.6f},{longitude:.6f}"
+                    metadata.append({"group":"Posizione","key":"Coordinate GPS","value":coordinates,"explanation":"Coordinate salvate nei metadati della foto. Possono indicare dove è stata scattata, ma potrebbero essere state modificate."})
+                    metadata.append({"group":"Posizione","key":"Apri sulla mappa","value":map_url,"explanation":"Apri il link per vedere queste coordinate su Google Maps."})
+            except Exception:
+                pass
     except Exception: pass
     if data.startswith(b"%PDF-"):
         try:
@@ -97,7 +118,18 @@ def analyze_file(path, original_name):
                     metadata.append({"group":"PDF","key":str(key).lstrip("/"),"value":str(value)[:500],"explanation":"Metadato dichiarato nel documento, non prova dell'identità dell'autore."})
         except Exception as exc:
             metadata.append({"group":"PDF","key":"Nota parser","value":str(exc)[:250],"explanation":"Il parser non ha letto tutti i dati del PDF."})
-    return {"name":original_name,"size_bytes":len(data),"size_human":human_size(len(data)),"detected_type":detected_name,"mime":detected_mime,"sha256":sha256,"metadata":metadata,"strings":printable_strings(data),"hex_preview":" ".join(f"{b:02X}" for b in data[:512]),"analyzed_at":datetime.now().astimezone().isoformat(timespec="seconds"),"analysis_note":"Analisi euristica locale. I metadati possono essere incompleti o falsificati."}
+    def metadata_value(*names):
+        wanted = {name.lower() for name in names}
+        for item in metadata:
+            if item["key"].lower() in wanted and item["value"] and item["value"] != "(nessuna)":
+                return item["value"]
+        return None
+    camera_make = metadata_value("Make")
+    camera_model = metadata_value("Model")
+    camera = " ".join(part for part in (camera_make, camera_model) if part) or None
+    photo_date = metadata_value("DateTimeOriginal", "DateTimeDigitized", "DateTime")
+    highlights = {"location": metadata_value("Coordinate GPS"), "map_url": metadata_value("Apri sulla mappa"), "photo_date": photo_date, "camera": camera}
+    return {"name":original_name,"size_bytes":len(data),"size_human":human_size(len(data)),"detected_type":detected_name,"mime":detected_mime,"sha256":sha256,"metadata":metadata,"highlights":highlights,"strings":printable_strings(data),"hex_preview":" ".join(f"{b:02X}" for b in data[:512]),"analyzed_at":datetime.now().astimezone().isoformat(timespec="seconds"),"analysis_note":"Analisi euristica locale. I metadati possono essere incompleti o falsificati."}
 
 @app.get("/")
 def index(): return send_from_directory(BASE_DIR, "index.html")
@@ -106,7 +138,7 @@ def style(): return send_from_directory(BASE_DIR, "style.css")
 @app.get("/script.js")
 def script(): return send_from_directory(BASE_DIR, "script.js")
 @app.get("/api/status")
-def status(): return jsonify({"name":"Meta Search","version":"0.1","platform":platform.system(),"max_file_bytes":MAX_FILE_BYTES})
+def status(): return jsonify({"name":"Meta Search","version":"0.2","platform":platform.system(),"max_file_bytes":MAX_FILE_BYTES})
 @app.post("/api/analyze")
 def analyze():
     if "file" not in request.files: return jsonify({"error":"Nessun file ricevuto."}), 400
@@ -121,7 +153,7 @@ def analyze():
                 chunk = uploaded.stream.read(1024 * 1024)
                 if not chunk: break
                 total += len(chunk)
-                if total > MAX_FILE_BYTES: return jsonify({"error":"Il file supera il limite di 100 MB della versione 0.1."}), 413
+                if total > MAX_FILE_BYTES: return jsonify({"error":"Il file supera il limite di 100 MB della versione 0.2."}), 413
                 temp.write(chunk)
         return jsonify(analyze_file(temp_path, uploaded.filename))
     except Exception as exc:
@@ -135,5 +167,5 @@ def analyze():
 def too_large(_error): return jsonify({"error":"Il file supera il limite di 100 MB."}), 413
 
 if __name__ == "__main__":
-    print("Meta Search 0.1 — apri http://127.0.0.1:5000")
+    print("Meta Search 0.2 — apri http://127.0.0.1:5000")
     app.run(host="127.0.0.1", port=5000, debug=False)
